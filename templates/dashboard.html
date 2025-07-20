@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Personal Loan Tracker{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="dashboard-header">
+        <h2>All Borrowers</h2>
+        <p class="subtitle">Track loan payments and overdue accounts</p>
+    </div>
+
+    {% if error %}
+    <div class="error-message">
+        <p>Error loading data: {{ error }}</p>
+    </div>
+    {% endif %}
+
+    {% if borrower_data and borrower_data|length > 0 %}
+    <div class="borrowers-grid">
+        {% for data in borrower_data %}
+        <div class="borrower-card {{ 'overdue' if data.overdue_months > 0 else 'current' }}">
+            <div class="borrower-header">
+                <h3>{{ data.borrower.name }}</h3>
+                <div class="status-badge">
+                    {% if data.borrower.principal_recovered %}
+                        <span class="badge recovered">✓ Recovered</span>
+                    {% else %}
+                        <span class="badge pending">Pending</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="borrower-details">
+                <div class="detail-row">
+                    <span class="label">Principal:</span>
+                    <span class="value">{{ data.borrower.principal | format_currency }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Interest Rate:</span>
+                    <span class="value">{{ data.borrower.interest_rate }}% monthly</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Start Date:</span>
+                    <span class="value">{{ data.borrower.start_date.strftime('%d %b %Y') }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Payments Made:</span>
+                    <span class="value">{{ data.payment_count }}</span>
+                </div>
+                {% if data.overdue_months > 0 %}
+                <div class="detail-row overdue-warning">
+                    <span class="label">Overdue:</span>
+                    <span class="value">{{ data.overdue_months }} months</span>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="borrower-actions">
+                <a href="/borrower/{{ data.borrower.id }}" class="btn btn-primary">View Details</a>
+                <a href="/borrower/{{ data.borrower.id }}/edit" class="btn btn-secondary">Edit</a>
+                <form method="post" action="/borrower/{{ data.borrower.id }}/delete" style="display: inline;">
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this borrower and all their payment records?')">Delete</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <h3>No borrowers found</h3>
+        <p>Start by adding your first borrower to track their loan payments.</p>
+        <a href="/add" class="btn btn-primary">Add First Borrower</a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Debug info (remove in production) -->
+<div style="margin-top: 2rem; padding: 1rem; background: #f8f9fa; border-radius: 4px; font-size: 0.9rem; color: #6c757d;">
+    <strong>Debug Info:</strong> 
+    Found {{ borrower_data|length if borrower_data else 0 }} borrowers
+    {% if borrower_data %}
+        <br>Data structure is working correctly
+    {% endif %}
+</div>
+{% endblock %}
