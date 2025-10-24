@@ -1,0 +1,209 @@
+﻿{% extends "base.html" %}
+
+{% block title %}{{ borrower.name }} - Loan Tracker{% endblock %}
+
+{% block content %}
+<div class="mb-8 animate-fade-in">
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <a href="/borrowers" class="text-gray-600 hover:text-black mb-2 inline-flex items-center group">
+                <svg class="w-5 h-5 mr-1 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Back to Borrowers
+            </a>
+            <h1 class="text-4xl font-bold text-gray-900">{{ borrower.name }}</h1>
+        </div>
+        <div class="flex space-x-2">
+            <a href="/borrowers/{{ borrower.id }}/edit" class="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-all inline-flex items-center space-x-2 transform hover:scale-105">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                </svg>
+                <span>Edit</span>
+            </a>
+            <form method="post" action="/borrowers/{{ borrower.id }}/toggle-principal" class="inline">
+                <button type="submit" class="px-6 py-3 rounded-lg font-semibold transition-all transform hover:scale-105 {{ 'bg-green-100 text-green-800 hover:bg-green-200' if borrower.principal_recovered else 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200' }}">
+                    {{ '✓ Principal Recovered' if borrower.principal_recovered else 'Mark as Recovered' }}
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <!-- Loan Details Card -->
+    <div class="bg-white rounded-xl shadow-lg p-6 border-2 border-blue-100 animate-fade-in">
+        <h3 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+            <svg class="w-6 h-6 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+            </svg>
+            Loan Details
+        </h3>
+        <div class="space-y-4">
+            <div class="flex justify-between items-center py-3 border-b border-gray-200">
+                <span class="text-gray-600 font-medium">Principal Amount</span>
+                <span class="text-2xl font-bold text-gray-900">{{ borrower.principal | format_currency }}</span>
+            </div>
+            <div class="flex justify-between items-center py-3 border-b border-gray-200">
+                <span class="text-gray-600 font-medium">Interest Rate</span>
+                <span class="text-xl font-semibold text-blue-600">{{ borrower.interest_rate }}% /month</span>
+            </div>
+            <div class="flex justify-between items-center py-3 border-b border-gray-200">
+                <span class="text-gray-600 font-medium">Expected Interest</span>
+                <span class="text-xl font-semibold text-green-600">{{ expected_interest | format_currency }}</span>
+            </div>
+            <div class="flex justify-between items-center py-3 border-b border-gray-200">
+                <span class="text-gray-600 font-medium">Start Date</span>
+                <span class="text-gray-900 font-medium">{{ borrower.start_date.strftime('%d %b %Y') }}</span>
+            </div>
+            <div class="flex justify-between items-center py-3">
+                <span class="text-gray-600 font-medium">Overdue Status</span>
+                <span class="px-4 py-2 rounded-full font-semibold {{ 'bg-red-100 text-red-800' if overdue_months > 0 else 'bg-green-100 text-green-800' }}">
+                    {{ overdue_months }} months {{ 'overdue' if overdue_months > 0 else '' }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Principal Card -->
+    <div class="bg-white rounded-xl shadow-lg p-6 border-2 border-purple-100 animate-fade-in">
+        <h3 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+            <svg class="w-6 h-6 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+            </svg>
+            Change Principal
+        </h3>
+        <form method="post" action="/borrowers/{{ borrower.id }}/change-principal" class="space-y-4">
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">New Principal Amount</label>
+                <input type="number" name="new_principal" step="0.01" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none">
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Effective Date</label>
+                <input type="date" name="effective_date" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none">
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Note (Optional)</label>
+                <input type="text" name="note" placeholder="Reason for change" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none">
+            </div>
+            <button type="submit" class="w-full bg-purple-600 text-white py-3 rounded-lg font-semibold hover:bg-purple-700 transform hover:scale-105 transition-all shadow-lg">
+                Update Principal
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Add Payment Card -->
+<div class="bg-white rounded-xl shadow-lg p-6 border-2 border-green-100 mb-6 animate-fade-in">
+    <h3 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+        <svg class="w-6 h-6 mr-2 text-accent-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        Record Payment
+    </h3>
+    <form method="post" action="/borrowers/{{ borrower.id }}/payment" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Amount</label>
+            <input type="number" name="amount" value="{{ expected_interest }}" step="0.01" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all outline-none">
+        </div>
+        <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Payment Date</label>
+            <input type="date" name="payment_date" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all outline-none">
+        </div>
+        <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Note (Optional)</label>
+            <input type="text" name="note" placeholder="Payment note" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all outline-none">
+        </div>
+        <div class="flex flex-col justify-end">
+            <div class="flex items-center mb-2">
+                <input type="checkbox" name="is_custom" id="custom" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
+                <label for="custom" class="ml-2 text-sm text-gray-700 font-medium">Custom Amount</label>
+            </div>
+            <button type="submit" class="bg-accent-green text-white py-3 rounded-lg font-semibold hover:bg-green-600 transform hover:scale-105 transition-all shadow-lg">
+                Add Payment
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Payment History -->
+{% if payments %}
+<div class="bg-white rounded-xl shadow-lg overflow-hidden border-2 border-gray-100 mb-6 animate-fade-in">
+    <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
+        <h3 class="text-2xl font-bold text-gray-900 flex items-center">
+            <svg class="w-6 h-6 mr-2 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+            </svg>
+            Payment History
+        </h3>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Date</th>
+                    <th class="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Amount</th>
+                    <th class="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Note</th>
+                    <th class="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Type</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                {% for p in payments %}
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-6 py-4 text-gray-900 font-medium">{{ p.payment_date.strftime('%d %b %Y') }}</td>
+                    <td class="px-6 py-4 text-green-600 font-bold text-lg">{{ p.amount | format_currency }}</td>
+                    <td class="px-6 py-4 text-gray-600">{{ p.note or '-' }}</td>
+                    <td class="px-6 py-4">
+                        <span class="px-3 py-1 rounded-full text-sm font-semibold {{ 'bg-blue-100 text-blue-800' if p.is_custom else 'bg-gray-100 text-gray-800' }}">
+                            {{ 'Custom' if p.is_custom else 'Regular' }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- Principal Change History -->
+{% if principal_changes %}
+<div class="bg-white rounded-xl shadow-lg overflow-hidden border-2 border-gray-100 animate-fade-in">
+    <div class="bg-gradient-to-r from-purple-50 to-purple-100 px-6 py-4 border-b border-purple-200">
+        <h3 class="text-2xl font-bold text-gray-900 flex items-center">
+            <svg class="w-6 h-6 mr-2 text-purple-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+            </svg>
+            Principal Change History
+        </h3>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Date</th>
+                    <th class="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Old Principal</th>
+                    <th class="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">New Principal</th>
+                    <th class="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Old Rate</th>
+                    <th class="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">New Rate</th>
+                    <th class="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Note</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                {% for pc in principal_changes %}
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-6 py-4 text-gray-900 font-medium">{{ pc.effective_date.strftime('%d %b %Y') }}</td>
+                    <td class="px-6 py-4 text-red-600 font-semibold">{{ pc.old_principal | format_currency }}</td>
+                    <td class="px-6 py-4 text-green-600 font-semibold">{{ pc.new_principal | format_currency }}</td>
+                    <td class="px-6 py-4 text-gray-700">{{ pc.old_interest_rate }}%</td>
+                    <td class="px-6 py-4 text-gray-700">{{ pc.new_interest_rate }}%</td>
+                    <td class="px-6 py-4 text-gray-600">{{ pc.note or '-' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

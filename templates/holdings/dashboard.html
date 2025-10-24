@@ -1,0 +1,88 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Holdings - Loan Tracker{% endblock %}
+
+{% block content %}
+<div class="mb-8 animate-fade-in">
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-4xl font-bold text-gray-900">Holdings</h1>
+            <p class="text-gray-600 mt-2">Manage holdings and track transfers</p>
+        </div>
+        <a href="/holdings/add" class="bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl inline-flex items-center space-x-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+            </svg>
+            <span>Add Holder</span>
+        </a>
+    </div>
+</div>
+
+{% if holder_data %}
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
+    {% for data in holder_data %}
+    <div class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 border-2 border-gray-200 overflow-hidden group">
+        <div class="bg-gradient-to-r from-gray-900 to-gray-700 p-6">
+            <div class="flex justify-between items-start mb-3">
+                <h3 class="text-2xl font-bold text-white group-hover:text-accent-green transition-colors">
+                    {{ data.holder.name }}
+                </h3>
+                <span class="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-sm font-bold text-white border border-white/30">
+                    {{ data.holder.currency }}
+                </span>
+            </div>
+            <div class="mt-4">
+                <p class="text-gray-300 text-sm mb-1">Current Balance</p>
+                <p class="text-3xl font-bold text-white">
+                    {{ data.balance | format_currency(data.holder.currency) }}
+                </p>
+            </div>
+        </div>
+        
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
+                <span class="text-gray-600 font-medium">Total Transactions</span>
+                <span class="bg-gray-100 px-4 py-2 rounded-full text-gray-900 font-bold">
+                    {{ data.transaction_count }}
+                </span>
+            </div>
+            
+            <div class="flex space-x-2">
+                <a href="/holdings/{{ data.holder.id }}" class="flex-1 bg-black text-white py-3 rounded-lg font-semibold hover:bg-gray-800 transition-all text-center transform hover:scale-105">
+                    View Details
+                </a>
+                <a href="/holdings/{{ data.holder.id }}/edit" class="px-4 py-3 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-all transform hover:scale-105">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                </a>
+                <form method="post" action="/holdings/{{ data.holder.id }}/delete" onsubmit="return confirm('Delete this holder and all transactions?')" class="inline">
+                    <button type="submit" class="px-4 py-3 bg-accent-red text-white rounded-lg font-semibold hover:bg-red-600 transition-all transform hover:scale-105">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-16 animate-fade-in">
+    <div class="inline-flex items-center justify-center w-24 h-24 bg-gray-100 rounded-full mb-6">
+        <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+        </svg>
+    </div>
+    <h3 class="text-2xl font-bold text-gray-900 mb-2">No holders yet</h3>
+    <p class="text-gray-600 mb-6">Start managing holdings by adding your first holder</p>
+    <a href="/holdings/add" class="inline-flex items-center space-x-2 bg-black text-white px-8 py-4 rounded-lg font-semibold hover:bg-gray-800 transform hover:scale-105 transition-all shadow-lg">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+        </svg>
+        <span>Add First Holder</span>
+    </a>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Development server script for Personal Loan Tracker
 """
