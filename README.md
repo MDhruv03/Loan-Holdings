@@ -39,6 +39,9 @@ This repository includes `render.yaml` for one-click setup.
 	- (Optional) `ADMIN_USERNAME`
 4. Deploy.
 
+Runtime note:
+- `runtime.txt` pins Python to `3.11.9` for compatibility with current dependency versions.
+
 Default start command:
 
 ```bash

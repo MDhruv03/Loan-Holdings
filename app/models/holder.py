@@ -16,7 +16,7 @@ class Holder(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.now)
     
     # Relationship
-    holdings: List["Holding"] = Relationship(back_populates="holder", cascade_delete=True)
+    holdings: List["Holding"] = Relationship(back_populates="holder")
 
 
 class Holding(SQLModel, table=True):

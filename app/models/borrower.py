@@ -17,8 +17,8 @@ class Borrower(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.now)
     
     # Relationships
-    payments: List["Payment"] = Relationship(back_populates="borrower", cascade_delete=True)
-    principal_changes: List["PrincipalChange"] = Relationship(back_populates="borrower", cascade_delete=True)
+    payments: List["Payment"] = Relationship(back_populates="borrower")
+    principal_changes: List["PrincipalChange"] = Relationship(back_populates="borrower")
 
 
 class Payment(SQLModel, table=True):
