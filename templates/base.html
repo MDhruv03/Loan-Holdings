@@ -4,67 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Personal Loan Tracker{% endblock %}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#000000',
-                        secondary: '#FFFFFF',
-                        accent: {
-                            red: '#EF4444',
-                            green: '#10B981'
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in {
-            animation: fadeIn 0.3s ease-out;
-        }
-    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
 </head>
-<body class="bg-gray-50 min-h-screen flex flex-col">
-    <nav class="bg-black text-white shadow-lg sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex items-center space-x-2">
-                    <svg class="w-8 h-8 text-accent-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    <a href="/" class="text-xl font-bold hover:text-accent-green transition-colors">
-                        Loan Tracker
-                    </a>
-                </div>
-                <div class="flex items-center space-x-1">
-                    <a href="/borrowers" class="px-4 py-2 rounded-lg hover:bg-gray-800 transition-all duration-200 hover:scale-105">
-                        Borrowers
-                    </a>
-                    <a href="/holdings" class="px-4 py-2 rounded-lg hover:bg-gray-800 transition-all duration-200 hover:scale-105">
-                        Holdings
-                    </a>
-                    <a href="/logout" class="ml-2 px-4 py-2 bg-accent-red hover:bg-red-600 rounded-lg transition-all duration-200 hover:scale-105">
-                        Logout
-                    </a>
-                </div>
+<body>
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="/" class="brand">Loan <strong>Holdings</strong></a>
+            <div class="nav-links">
+                <a href="/borrowers" class="nav-link">Borrowers</a>
+                <a href="/holdings" class="nav-link">Holdings</a>
+                <a href="/logout" class="nav-link">Logout</a>
             </div>
         </div>
     </nav>
 
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {% block content %}{% endblock %}
+    <main class="main-content">
+        <div class="container fade-up">
+            {% block content %}{% endblock %}
+        </div>
     </main>
 
-    <footer class="bg-black text-white py-6 mt-auto">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <p class="text-gray-400">&copy; 2025 Personal Loan Tracker. Simple & Elegant.</p>
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 Loan Holdings. Quiet design, precise tracking.</p>
         </div>
     </footer>
 </body>
