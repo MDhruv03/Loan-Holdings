@@ -41,6 +41,10 @@ This repository includes `render.yaml` for one-click setup.
 
 Runtime note:
 - `runtime.txt` pins Python to `3.11.9` for compatibility with current dependency versions.
+- `render.yaml` also sets `PYTHON_VERSION=3.11.9` and `.python-version` is included as fallback.
+
+If Render still shows Python 3.14 in logs:
+- run **Clear build cache & Deploy** once after pushing latest changes.
 
 Default start command:
 
