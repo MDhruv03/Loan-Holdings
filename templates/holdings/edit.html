@@ -1,13 +1,24 @@
 {% extends "base.html" %}
 {% block title %}Edit {{ holder.name }}{% endblock %}
 {% block content %}
-<div class="form-container">
-    <div class="form-header"><h2>Edit Holder</h2></div>
+<section class="detail-header">
+    <div class="page-head">
+        <p class="page-kicker">Holdings</p>
+        <h1 class="page-title">Edit Holder</h1>
+        <p class="page-subtitle">Update profile and contact details for {{ holder.name }}.</p>
+    </div>
+    <div class="detail-actions">
+        <a href="/holdings/{{ holder.id }}" class="btn btn-ghost">Back</a>
+    </div>
+</section>
+
+<section class="form-container fade-up" style="max-width:760px; margin:0 auto;">
     <form method="post" action="/holdings/{{ holder.id }}/edit">
         <div class="form-group">
             <label class="form-label">Name</label>
             <input type="text" name="name" class="form-input" value="{{ holder.name }}" required>
         </div>
+
         <div class="form-group">
             <label class="form-label">Currency</label>
             <select name="currency" class="form-select" required>
@@ -16,18 +27,21 @@
                 {% endfor %}
             </select>
         </div>
+
         <div class="form-group">
             <label class="form-label">Phone</label>
             <input type="text" name="phone" class="form-input" value="{{ holder.phone or '' }}">
         </div>
+
         <div class="form-group">
             <label class="form-label">Notes</label>
             <textarea name="notes" class="form-textarea">{{ holder.notes or '' }}</textarea>
         </div>
+
         <div class="form-actions">
             <button type="submit" class="btn btn-primary">Save Changes</button>
             <a href="/holdings/{{ holder.id }}" class="btn btn-secondary">Cancel</a>
         </div>
     </form>
-</div>
+</section>
 {% endblock %}

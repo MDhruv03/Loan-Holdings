@@ -3,94 +3,45 @@
 {% block title %}Add Borrower - Loan Tracker{% endblock %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto animate-fade-in">
-    <div class="mb-6">
-        <a href="/borrowers" class="text-gray-600 hover:text-black mb-4 inline-flex items-center group">
-            <svg class="w-5 h-5 mr-1 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-            </svg>
-            Back to Borrowers
-        </a>
-        <h1 class="text-4xl font-bold text-gray-900 mt-2">Add New Borrower</h1>
-        <p class="text-gray-600 mt-2">Create a new loan record</p>
+<section class="detail-header">
+    <div class="page-head">
+        <p class="page-kicker">Borrowers</p>
+        <h1 class="page-title">Add New Borrower</h1>
+        <p class="page-subtitle">Create a clean record with principal and monthly rate.</p>
     </div>
-    
-    <div class="bg-white rounded-xl shadow-lg p-8 border-2 border-gray-100">
-        <form method="post" action="/borrowers/add" class="space-y-6">
-            <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2" for="name">
-                    Borrower Name
-                </label>
-                <input 
-                    type="text" 
-                    id="name" 
-                    name="name" 
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all outline-none hover:border-gray-400" 
-                    placeholder="Enter borrower name"
-                    required
-                >
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2" for="principal">
-                        Principal Amount
-                    </label>
-                    <input 
-                        type="number" 
-                        id="principal" 
-                        name="principal" 
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all outline-none hover:border-gray-400" 
-                        placeholder="0.00"
-                        step="0.01" 
-                        required
-                    >
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2" for="interest_rate">
-                        Interest Rate (% per month)
-                    </label>
-                    <input 
-                        type="number" 
-                        id="interest_rate" 
-                        name="interest_rate" 
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none hover:border-gray-400" 
-                        placeholder="0.00"
-                        step="0.01" 
-                        required
-                    >
-                </div>
-            </div>
-            
-            <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2" for="start_date">
-                    Start Date
-                </label>
-                <input 
-                    type="date" 
-                    id="start_date" 
-                    name="start_date" 
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none hover:border-gray-400" 
-                    required
-                >
-            </div>
-            
-            <div class="flex space-x-4 pt-4">
-                <button 
-                    type="submit" 
-                    class="flex-1 bg-black text-white py-3 rounded-lg font-semibold hover:bg-gray-800 transform hover:scale-105 transition-all shadow-lg hover:shadow-xl"
-                >
-                    Add Borrower
-                </button>
-                <a 
-                    href="/borrowers" 
-                    class="flex-1 bg-gray-100 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-all text-center transform hover:scale-105"
-                >
-                    Cancel
-                </a>
-            </div>
-        </form>
+    <div class="detail-actions">
+        <a href="/borrowers" class="btn btn-ghost">Back</a>
     </div>
-</div>
+</section>
+
+<section class="form-container fade-up" style="max-width:760px; margin:0 auto;">
+    <form method="post" action="/borrowers/add">
+        <div class="form-group">
+            <label class="form-label" for="name">Borrower Name</label>
+            <input type="text" id="name" name="name" class="form-input" placeholder="Enter borrower name" required>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label" for="principal">Principal Amount</label>
+                <input type="number" id="principal" name="principal" class="form-input" placeholder="0.00" step="0.01" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="interest_rate">Interest Rate (% per month)</label>
+                <input type="number" id="interest_rate" name="interest_rate" class="form-input" placeholder="0.00" step="0.01" required>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="start_date">Start Date</label>
+            <input type="date" id="start_date" name="start_date" class="form-input" required>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Add Borrower</button>
+            <a href="/borrowers" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</section>
 {% endblock %}
