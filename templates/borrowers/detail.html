@@ -1,209 +1,256 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 
-{% block title %}{{ borrower.name }} - Loan Tracker{% endblock %}
+{% block title %}{{ borrower.name }} - Loan Ledger{% endblock %}
 
 {% block content %}
-<div class="mb-8 animate-fade-in">
-    <div class="flex justify-between items-center mb-6">
-        <div>
-            <a href="/borrowers" class="text-gray-600 hover:text-black mb-2 inline-flex items-center group">
-                <svg class="w-5 h-5 mr-1 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                </svg>
-                Back to Borrowers
-            </a>
-            <h1 class="text-4xl font-bold text-gray-900">{{ borrower.name }}</h1>
-        </div>
-        <div class="flex space-x-2">
-            <a href="/borrowers/{{ borrower.id }}/edit" class="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-all inline-flex items-center space-x-2 transform hover:scale-105">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                </svg>
-                <span>Edit</span>
-            </a>
-            <form method="post" action="/borrowers/{{ borrower.id }}/toggle-principal" class="inline">
-                <button type="submit" class="px-6 py-3 rounded-lg font-semibold transition-all transform hover:scale-105 {{ 'bg-green-100 text-green-800 hover:bg-green-200' if borrower.principal_recovered else 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200' }}">
-                    {{ '✓ Principal Recovered' if borrower.principal_recovered else 'Mark as Recovered' }}
-                </button>
-            </form>
-        </div>
+<section class="mb-12 flex flex-wrap items-end justify-between gap-6">
+    <div>
+        <a href="/borrowers" class="text-xs uppercase tracking-wider text-textMuted hover:text-white transition-colors border-b border-transparent hover:border-white pb-0.5 mb-8 inline-block">&larr; Return to Ledger</a>
+        <h2 class="font-serif text-3xl text-white mb-2">{{ borrower.name }}</h2>
+        <p class="text-xs text-textMuted uppercase tracking-wider">Active since {{ borrower.start_date.strftime('%d %b %Y') }} / {{ months_elapsed }} periods</p>
     </div>
-</div>
-
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-    <!-- Loan Details Card -->
-    <div class="bg-white rounded-xl shadow-lg p-6 border-2 border-blue-100 animate-fade-in">
-        <h3 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-            <svg class="w-6 h-6 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-            </svg>
-            Loan Details
-        </h3>
-        <div class="space-y-4">
-            <div class="flex justify-between items-center py-3 border-b border-gray-200">
-                <span class="text-gray-600 font-medium">Principal Amount</span>
-                <span class="text-2xl font-bold text-gray-900">{{ borrower.principal | format_currency }}</span>
-            </div>
-            <div class="flex justify-between items-center py-3 border-b border-gray-200">
-                <span class="text-gray-600 font-medium">Interest Rate</span>
-                <span class="text-xl font-semibold text-blue-600">{{ borrower.interest_rate }}% /month</span>
-            </div>
-            <div class="flex justify-between items-center py-3 border-b border-gray-200">
-                <span class="text-gray-600 font-medium">Expected Interest</span>
-                <span class="text-xl font-semibold text-green-600">{{ expected_interest | format_currency }}</span>
-            </div>
-            <div class="flex justify-between items-center py-3 border-b border-gray-200">
-                <span class="text-gray-600 font-medium">Start Date</span>
-                <span class="text-gray-900 font-medium">{{ borrower.start_date.strftime('%d %b %Y') }}</span>
-            </div>
-            <div class="flex justify-between items-center py-3">
-                <span class="text-gray-600 font-medium">Overdue Status</span>
-                <span class="px-4 py-2 rounded-full font-semibold {{ 'bg-red-100 text-red-800' if overdue_months > 0 else 'bg-green-100 text-green-800' }}">
-                    {{ overdue_months }} months {{ 'overdue' if overdue_months > 0 else '' }}
-                </span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Change Principal Card -->
-    <div class="bg-white rounded-xl shadow-lg p-6 border-2 border-purple-100 animate-fade-in">
-        <h3 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-            <svg class="w-6 h-6 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
-            </svg>
-            Change Principal
-        </h3>
-        <form method="post" action="/borrowers/{{ borrower.id }}/change-principal" class="space-y-4">
-            <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">New Principal Amount</label>
-                <input type="number" name="new_principal" step="0.01" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none">
-            </div>
-            <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Effective Date</label>
-                <input type="date" name="effective_date" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none">
-            </div>
-            <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Note (Optional)</label>
-                <input type="text" name="note" placeholder="Reason for change" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none">
-            </div>
-            <button type="submit" class="w-full bg-purple-600 text-white py-3 rounded-lg font-semibold hover:bg-purple-700 transform hover:scale-105 transition-all shadow-lg">
-                Update Principal
-            </button>
+    <div class="flex flex-wrap gap-4">
+        <a href="/borrowers/{{ borrower.id }}/edit" class="border border-border text-white py-2 px-6 text-sm uppercase tracking-wider hover:border-textMuted transition-colors">Edit Entity</a>
+        <form method="post" action="/borrowers/{{ borrower.id }}/delete" onsubmit="return confirm('Purge borrower and all records?')">
+            <button type="submit" class="border border-danger text-danger bg-transparent py-2 px-6 text-sm uppercase tracking-wider hover:bg-danger hover:text-black transition-colors">Purge Data</button>
         </form>
     </div>
-</div>
+</section>
 
-<!-- Add Payment Card -->
-<div class="bg-white rounded-xl shadow-lg p-6 border-2 border-green-100 mb-6 animate-fade-in">
-    <h3 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-        <svg class="w-6 h-6 mr-2 text-accent-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-        </svg>
-        Record Payment
-    </h3>
-    <form method="post" action="/borrowers/{{ borrower.id }}/payment" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">Amount</label>
-            <input type="number" name="amount" value="{{ expected_interest }}" step="0.01" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all outline-none">
-        </div>
-        <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">Payment Date</label>
-            <input type="date" name="payment_date" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all outline-none">
-        </div>
-        <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">Note (Optional)</label>
-            <input type="text" name="note" placeholder="Payment note" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all outline-none">
-        </div>
-        <div class="flex flex-col justify-end">
-            <div class="flex items-center mb-2">
-                <input type="checkbox" name="is_custom" id="custom" class="w-4 h-4 text-green-600 rounded focus:ring-green-500">
-                <label for="custom" class="ml-2 text-sm text-gray-700 font-medium">Custom Amount</label>
+{% if status == 'defaulted' %}
+<section class="mb-8 border-l-2 border-danger pl-6 py-2">
+    <p class="text-sm text-danger font-medium">ACCOUNT IN DEFAULT</p>
+    <p class="text-sm text-textMuted mt-1">Capital designated as lost. Action logged.</p>
+    {% if borrower.defaulted_on %}
+    <p class="text-sm text-danger mt-2">Date: {{ borrower.defaulted_on.strftime('%d %b %Y') }}</p>
+    {% endif %}
+    {% if borrower.default_note %}
+    <p class="text-sm text-danger mt-1">Note: {{ borrower.default_note }}</p>
+    {% endif %}
+</section>
+{% endif %}
+
+<section class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-6 gap-px bg-border mb-16">
+    <article class="bg-bg p-6">
+        <p class="text-xs uppercase tracking-wider text-textMuted mb-2">Internal Status</p>
+        <p class="text-xl font-normal {{ 'text-danger' if status == 'defaulted' else ('text-success' if status == 'recovered' else 'text-white') }}">{{ 'Defaulted' if status == 'defaulted' else ('Recovered' if status == 'recovered' else 'Performing') }}</p>
+    </article>
+    <article class="bg-bg p-6">
+        <p class="text-xs uppercase tracking-wider text-textMuted mb-2">Base Principal</p>
+        <p class="text-xl font-normal text-white">{{ borrower.principal | format_currency }}</p>
+    </article>
+    <article class="bg-bg p-6">
+        <p class="text-xs uppercase tracking-wider text-textMuted mb-2">Mo. Expected Int.</p>
+        <p class="text-xl font-normal text-white">{{ expected_interest | format_currency }}</p>
+        <p class="mt-2 text-sm text-textMuted">{{ borrower.interest_rate }}% term</p>
+    </article>
+    <article class="bg-bg p-6 border-b-2 border-success md:border-b-0">
+        <p class="text-sm uppercase tracking-wider text-success mb-2">Capital Recovered</p>
+        <p class="text-xl font-normal text-success">{{ interest_recovered | format_currency }}</p>
+    </article>
+    <article class="bg-bg p-6 border-b-2 border-danger md:border-b-0">
+        <p class="text-sm uppercase tracking-wider text-danger mb-2">Interest Pending</p>
+        <p class="text-xl font-normal text-danger">{{ interest_due | format_currency }}</p>
+        <p class="mt-2 text-sm text-textMuted">~{{ overdue_months }}mo accrued</p>
+    </article>
+    <article class="bg-bg p-6">
+        <p class="text-xs uppercase tracking-wider text-textMuted mb-2">Total Due Risk</p>
+        <p class="text-xl font-normal text-white">{{ total_due | format_currency }}</p>
+    </article>
+</section>
+
+<section class="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-16">
+    <article class="border border-border p-8">
+        <h3 class="font-serif text-2xl text-white mb-2">Register Interest Receipt</h3>
+        <p class="text-xs text-textMuted uppercase tracking-wider mb-8">Execute month-end collection</p>
+        
+        <form method="post" action="/borrowers/{{ borrower.id }}/payment" class="space-y-6">
+            <div class="grid sm:grid-cols-2 gap-6">
+                <div>
+                    <label for="amount" class="block text-xs uppercase tracking-wider text-textMuted mb-2">Amount Recovered</label>
+                    <input type="number" id="amount" name="amount" value="{{ expected_interest }}" step="0.01" min="0.01" required 
+                        class="w-full bg-transparent border-b border-border py-2 text-white focus:outline-none focus:border-white transition-colors">
+                </div>
+                <div>
+                    <label for="payment_date" class="block text-xs uppercase tracking-wider text-textMuted mb-2">Value Date</label>
+                    <input type="date" id="payment_date" name="payment_date" required 
+                        class="w-full bg-transparent border-b border-border py-2 text-white focus:outline-none focus:border-white transition-colors [color-scheme:dark]">
+                </div>
             </div>
-            <button type="submit" class="bg-accent-green text-white py-3 rounded-lg font-semibold hover:bg-green-600 transform hover:scale-105 transition-all shadow-lg">
-                Add Payment
-            </button>
-        </div>
-    </form>
-</div>
+            <div>
+                <label for="payment_note" class="block text-xs uppercase tracking-wider text-textMuted mb-2">Transaction Memo</label>
+                <input type="text" id="payment_note" name="note" placeholder="Wire reference or details..." autocomplete="off"
+                    class="w-full bg-transparent border-b border-border py-2 text-white focus:outline-none focus:border-white transition-colors">
+            </div>
+            <div class="flex items-center gap-3 pt-2">
+                <input type="checkbox" name="is_custom" id="custom" class="w-3 h-3 rounded-none bg-transparent border-border text-white focus:ring-0 focus:ring-offset-0">
+                <label for="custom" class="text-xs uppercase tracking-wider text-textMuted cursor-pointer">Override default allocation (Custom Amount)</label>
+            </div>
+            <div class="pt-4 border-t border-border">
+                <button type="submit" class="border border-white bg-white text-black py-2 px-6 uppercase tracking-wider text-sm hover:bg-transparent hover:text-white transition-colors">Execute Receipt</button>
+            </div>
+        </form>
+    </article>
 
-<!-- Payment History -->
+    <article class="border border-border p-8">
+        <h3 class="font-serif text-2xl text-white mb-2">Contract Modification</h3>
+        <p class="text-xs text-textMuted uppercase tracking-wider mb-8">Increase capital or alter rate</p>
+        
+        <form method="post" action="/borrowers/{{ borrower.id }}/adjust-terms" class="space-y-6">
+            <div class="grid sm:grid-cols-3 gap-6">
+                <div>
+                    <label for="additional_principal" class="block text-xs uppercase tracking-wider text-textMuted mb-2">Capital Injection</label>
+                    <input type="number" id="additional_principal" name="additional_principal" value="0" step="0.01" min="0" autocomplete="off"
+                        class="w-full bg-transparent border-b border-border py-2 text-white focus:outline-none focus:border-white transition-colors">
+                </div>
+                <div>
+                    <label for="new_interest_rate" class="block text-xs uppercase tracking-wider text-textMuted mb-2">New Rate (%)</label>
+                    <input type="number" id="new_interest_rate" name="new_interest_rate" step="0.01" min="0.01" placeholder="{{ borrower.interest_rate }}" autocomplete="off"
+                        class="w-full bg-transparent border-b border-border py-2 text-white focus:outline-none focus:border-white transition-colors">
+                </div>
+                <div>
+                    <label for="effective_date" class="block text-xs uppercase tracking-wider text-textMuted mb-2">Effective From</label>
+                    <input type="date" id="effective_date" name="effective_date" required 
+                        class="w-full bg-transparent border-b border-border py-2 text-white focus:outline-none focus:border-white transition-colors [color-scheme:dark]">
+                </div>
+            </div>
+            <div>
+                <label for="adjust_note" class="block text-xs uppercase tracking-wider text-textMuted mb-2">Modification Memo</label>
+                <input type="text" id="adjust_note" name="note" placeholder="Reasoning..." autocomplete="off"
+                    class="w-full bg-transparent border-b border-border py-2 text-white focus:outline-none focus:border-white transition-colors">
+            </div>
+            <div class="pt-4 border-t border-border">
+                <button type="submit" class="border border-border text-white py-2 px-6 uppercase tracking-wider text-sm hover:border-white transition-colors">Commit Modification</button>
+            </div>
+        </form>
+    </article>
+</section>
+
+<section class="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-16">
+    <article class="border border-border p-8">
+        <h3 class="font-serif text-2xl text-white mb-2">Risk &amp; Performance Actions</h3>
+        <p class="text-xs text-textMuted uppercase tracking-wider mb-8">Manage structural risks and lifecycle</p>
+        
+        <div class="space-y-8">
+            <form method="post" action="/borrowers/{{ borrower.id }}/toggle-principal" class="pb-6 border-b border-border">
+                <button type="submit" class="w-full border py-3 px-6 text-sm uppercase tracking-wider transition-colors {{ 'border-border text-white hover:border-white' if borrower.principal_recovered else 'border-success text-success hover:bg-success hover:text-black' }}">
+                    {{ 'Revert Principal Recovery' if borrower.principal_recovered else 'Declare Principal Recovered' }}
+                </button>
+            </form>
+
+            {% if status != 'defaulted' %}
+            <form method="post" action="/borrowers/{{ borrower.id }}/mark-defaulted" class="space-y-6">
+                <div>
+                    <label for="default_note" class="block text-sm uppercase tracking-wider text-danger mb-2">Write-off Justification</label>
+                    <input type="text" id="default_note" name="note" placeholder="Provide evidence/memo" autocomplete="off"
+                        class="w-full bg-transparent border-b border-danger/30 py-2 text-danger focus:outline-none focus:border-danger transition-colors">
+                </div>
+                <button type="submit" class="w-full border border-danger text-danger py-3 px-6 text-sm uppercase tracking-wider hover:bg-danger hover:text-black transition-colors" onclick="return confirm('Irrevocable action: Flag entity as defaulted and register total capital loss?')">Initiate Write-off</button>
+            </form>
+            {% else %}
+            <form method="post" action="/borrowers/{{ borrower.id }}/clear-defaulted">
+                <button type="submit" class="w-full border border-border text-white py-3 px-6 text-sm uppercase tracking-wider hover:border-white transition-colors">Revoke Write-off &amp; Reactivate</button>
+            </form>
+            {% endif %}
+        </div>
+    </article>
+
+    <article class="border border-border p-8">
+        <h3 class="font-serif text-2xl text-white mb-2">Absolute Capital Reset</h3>
+        <p class="text-xs text-textMuted uppercase tracking-wider mb-8">Override standing principal basis entirely</p>
+        
+        <form method="post" action="/borrowers/{{ borrower.id }}/change-principal" class="space-y-6">
+            <div class="grid sm:grid-cols-2 gap-6">
+                <div>
+                    <label for="new_principal" class="block text-xs uppercase tracking-wider text-textMuted mb-2">Hard Reset Capital</label>
+                    <input type="number" id="new_principal" name="new_principal" step="0.01" min="0.01" required autocomplete="off"
+                        class="w-full bg-transparent border-b border-border py-2 text-white focus:outline-none focus:border-white transition-colors">
+                </div>
+                <div>
+                    <label for="set_effective_date" class="block text-xs uppercase tracking-wider text-textMuted mb-2">Reset Epoch</label>
+                    <input type="date" id="set_effective_date" name="effective_date" required 
+                        class="w-full bg-transparent border-b border-border py-2 text-white focus:outline-none focus:border-white transition-colors [color-scheme:dark]">
+                </div>
+            </div>
+            <div>
+                <label for="set_note" class="block text-xs uppercase tracking-wider text-textMuted mb-2">Justification Memo</label>
+                <input type="text" id="set_note" name="note" placeholder="Why force overwrite?" autocomplete="off"
+                    class="w-full bg-transparent border-b border-border py-2 text-white focus:outline-none focus:border-white transition-colors">
+            </div>
+            <div class="pt-4 border-t border-border">
+                <button type="submit" class="border border-border text-white py-2 px-6 uppercase tracking-wider text-sm hover:border-white transition-colors">Force Overwrite</button>
+            </div>
+        </form>
+    </article>
+</section>
+
 {% if payments %}
-<div class="bg-white rounded-xl shadow-lg overflow-hidden border-2 border-gray-100 mb-6 animate-fade-in">
-    <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
-        <h3 class="text-2xl font-bold text-gray-900 flex items-center">
-            <svg class="w-6 h-6 mr-2 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
-            </svg>
-            Payment History
-        </h3>
+<section class="mb-16">
+    <div class="mb-6 flex justify-between items-end">
+        <h3 class="font-serif text-2xl text-white">Payment Ledger</h3>
     </div>
     <div class="overflow-x-auto">
-        <table class="w-full">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Date</th>
-                    <th class="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Amount</th>
-                    <th class="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Note</th>
-                    <th class="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Type</th>
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="border-b-2 border-border">
+                    <th class="py-3 px-4 text-xs uppercase tracking-wider text-textMuted font-normal">Date Executed</th>
+                    <th class="py-3 px-4 text-xs uppercase tracking-wider text-textMuted font-normal">Registered Amt.</th>
+                    <th class="py-3 px-4 text-xs uppercase tracking-wider text-textMuted font-normal">Memo</th>
+                    <th class="py-3 px-4 text-xs uppercase tracking-wider text-textMuted font-normal">Category</th>
+                    <th class="py-3 px-4 text-xs uppercase tracking-wider text-textMuted font-normal">Actions</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200">
+            <tbody class="text-sm">
                 {% for p in payments %}
-                <tr class="hover:bg-gray-50 transition-colors">
-                    <td class="px-6 py-4 text-gray-900 font-medium">{{ p.payment_date.strftime('%d %b %Y') }}</td>
-                    <td class="px-6 py-4 text-green-600 font-bold text-lg">{{ p.amount | format_currency }}</td>
-                    <td class="px-6 py-4 text-gray-600">{{ p.note or '-' }}</td>
-                    <td class="px-6 py-4">
-                        <span class="px-3 py-1 rounded-full text-sm font-semibold {{ 'bg-blue-100 text-blue-800' if p.is_custom else 'bg-gray-100 text-gray-800' }}">
-                            {{ 'Custom' if p.is_custom else 'Regular' }}
-                        </span>
+                <tr class="border-b border-border hover:bg-border/30 transition-colors">
+                    <td class="py-4 px-4 text-white">{{ p.payment_date.strftime('%d %b %Y') }}</td>
+                    <td class="py-4 px-4 text-success">{{ p.amount | format_currency }}</td>
+                    <td class="py-4 px-4 text-textMuted">{{ p.note or '--' }}</td>
+                    <td class="py-4 px-4 text-textMuted">{{ 'Custom Setup' if p.is_custom else 'Expected Mo.' }}</td>
+                    <td class="py-4 px-4">
+                        <form method="post" action="/borrowers/{{ borrower.id }}/payment/{{ p.id }}/delete" onsubmit="return confirm('Purge this receipt from records?')">
+                            <button type="submit" class="text-sm uppercase tracking-wider text-danger hover:text-white transition-colors border-b border-transparent hover:border-white">Strike Record</button>
+                        </form>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
-</div>
+</section>
 {% endif %}
 
-<!-- Principal Change History -->
 {% if principal_changes %}
-<div class="bg-white rounded-xl shadow-lg overflow-hidden border-2 border-gray-100 animate-fade-in">
-    <div class="bg-gradient-to-r from-purple-50 to-purple-100 px-6 py-4 border-b border-purple-200">
-        <h3 class="text-2xl font-bold text-gray-900 flex items-center">
-            <svg class="w-6 h-6 mr-2 text-purple-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
-            </svg>
-            Principal Change History
-        </h3>
+<section class="mb-16">
+    <div class="mb-6 flex justify-between items-end">
+        <h3 class="font-serif text-2xl text-white">Constitutional Evolution</h3>
     </div>
     <div class="overflow-x-auto">
-        <table class="w-full">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Date</th>
-                    <th class="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Old Principal</th>
-                    <th class="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">New Principal</th>
-                    <th class="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Old Rate</th>
-                    <th class="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">New Rate</th>
-                    <th class="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Note</th>
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="border-b-2 border-border">
+                    <th class="py-3 px-4 text-xs uppercase tracking-wider text-textMuted font-normal">Epoch</th>
+                    <th class="py-3 px-4 text-xs uppercase tracking-wider text-textMuted font-normal">Prev Base</th>
+                    <th class="py-3 px-4 text-xs uppercase tracking-wider text-textMuted font-normal">New Base</th>
+                    <th class="py-3 px-4 text-xs uppercase tracking-wider text-textMuted font-normal">Prev Rate</th>
+                    <th class="py-3 px-4 text-xs uppercase tracking-wider text-textMuted font-normal">New Rate</th>
+                    <th class="py-3 px-4 text-xs uppercase tracking-wider text-textMuted font-normal">Memo</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200">
+            <tbody class="text-sm">
                 {% for pc in principal_changes %}
-                <tr class="hover:bg-gray-50 transition-colors">
-                    <td class="px-6 py-4 text-gray-900 font-medium">{{ pc.effective_date.strftime('%d %b %Y') }}</td>
-                    <td class="px-6 py-4 text-red-600 font-semibold">{{ pc.old_principal | format_currency }}</td>
-                    <td class="px-6 py-4 text-green-600 font-semibold">{{ pc.new_principal | format_currency }}</td>
-                    <td class="px-6 py-4 text-gray-700">{{ pc.old_interest_rate }}%</td>
-                    <td class="px-6 py-4 text-gray-700">{{ pc.new_interest_rate }}%</td>
-                    <td class="px-6 py-4 text-gray-600">{{ pc.note or '-' }}</td>
+                <tr class="border-b border-border hover:bg-border/30 transition-colors">
+                    <td class="py-4 px-4 text-white">{{ pc.effective_date.strftime('%d %b %Y') }}</td>
+                    <td class="py-4 px-4 text-textMuted">{{ pc.old_principal | format_currency }}</td>
+                    <td class="py-4 px-4 text-white">{{ pc.new_principal | format_currency }}</td>
+                    <td class="py-4 px-4 text-textMuted">{{ pc.old_interest_rate }}%</td>
+                    <td class="py-4 px-4 text-textMuted">{{ pc.new_interest_rate }}%</td>
+                    <td class="py-4 px-4 text-textMuted">{{ pc.note or '--' }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
-</div>
+</section>
 {% endif %}
-
 {% endblock %}

@@ -1,33 +1,56 @@
 {% extends "base.html" %}
-{% block title %}Edit {{ holder.name }}{% endblock %}
+
+{% block title %}Edit {{ holder.name }} - Loan Ledger{% endblock %}
+
 {% block content %}
-<div class="form-container">
-    <div class="form-header"><h2>Edit Holder</h2></div>
-    <form method="post" action="/holdings/{{ holder.id }}/edit">
-        <div class="form-group">
-            <label class="form-label">Name</label>
-            <input type="text" name="name" class="form-input" value="{{ holder.name }}" required>
-        </div>
-        <div class="form-group">
-            <label class="form-label">Currency</label>
-            <select name="currency" class="form-select" required>
-                {% for curr in currencies %}
-                <option value="{{ curr }}" {% if curr == holder.currency %}selected{% endif %}>{{ curr }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="form-group">
-            <label class="form-label">Phone</label>
-            <input type="text" name="phone" class="form-input" value="{{ holder.phone or '' }}">
-        </div>
-        <div class="form-group">
-            <label class="form-label">Notes</label>
-            <textarea name="notes" class="form-textarea">{{ holder.notes or '' }}</textarea>
-        </div>
-        <div class="form-actions">
-            <button type="submit" class="btn btn-primary">Save Changes</button>
-            <a href="/holdings/{{ holder.id }}" class="btn btn-secondary">Cancel</a>
-        </div>
-    </form>
-</div>
+<section class="max-w-2xl mx-auto mt-12">
+    <div class="mb-12">
+        <a href="/holdings/{{ holder.id }}" class="text-xs uppercase tracking-wider text-textMuted hover:text-white transition-colors border-b border-transparent hover:border-white pb-0.5 mb-8 inline-block">&larr; Return to {{ holder.name }} Account</a>
+        <h2 class="font-serif text-3xl text-white mb-2">Edit Holder Profile</h2>
+        <p class="text-xs text-textMuted uppercase tracking-wider">Update entity contact and structure</p>
+    </div>
+
+    <div class="border border-border p-8">
+        <form method="post" action="/holdings/{{ holder.id }}/edit" class="space-y-8">
+            <div>
+                <label for="name" class="block text-xs uppercase tracking-wider text-textMuted mb-2">Holder Name</label>
+                <input type="text" id="name" name="name" value="{{ holder.name }}" required autocomplete="off"
+                    class="w-full bg-transparent border-b border-border py-2 text-white focus:outline-none focus:border-white transition-colors">
+            </div>
+
+            <div>
+                <label for="currency" class="block text-xs uppercase tracking-wider text-textMuted mb-2">Currency</label>
+                <select id="currency" name="currency" required 
+                    class="w-full bg-bg border-b border-border py-2 text-white focus:outline-none focus:border-white transition-colors [color-scheme:dark]">
+                    {% for curr in currencies %}
+                    <option value="{{ curr }}" {% if curr == holder.currency %}selected{% endif %}>{{ curr }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label for="phone" class="block text-xs uppercase tracking-wider text-textMuted mb-2">Contact Reference</label>
+                <input type="text" id="phone" name="phone" value="{{ holder.phone or '' }}" autocomplete="off"
+                    class="w-full bg-transparent border-b border-border py-2 text-white focus:outline-none focus:border-white transition-colors">
+            </div>
+
+            <div>
+                <label for="notes" class="block text-xs uppercase tracking-wider text-textMuted mb-2">Additional Directives</label>
+                <textarea id="notes" name="notes" rows="3"
+                    class="w-full bg-transparent border border-border py-2 px-3 text-white focus:outline-none focus:border-white transition-colors">{{ holder.notes or '' }}</textarea>
+            </div>
+
+            <div class="pt-8 border-t border-border flex flex-col sm:flex-row gap-4">
+                <button type="submit" 
+                    class="border border-white bg-white text-black py-3 px-8 uppercase tracking-wider text-sm hover:bg-transparent hover:text-white transition-colors">
+                    Commit Changes
+                </button>
+                <a href="/holdings/{{ holder.id }}" 
+                    class="border border-border text-white py-3 px-8 text-center uppercase tracking-wider text-sm hover:border-textMuted transition-colors">
+                    Discard
+                </a>
+            </div>
+        </form>
+    </div>
+</section>
 {% endblock %}

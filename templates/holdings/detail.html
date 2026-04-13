@@ -1,86 +1,155 @@
 {% extends "base.html" %}
-{% block title %}{{ holder.name }}{% endblock %}
+
+{% block title %}{{ holder.name }} - Holdings{% endblock %}
+
 {% block content %}
-<div class="detail-header">
-    <h2>{{ holder.name }} ({{ holder.currency }})</h2>
-    <div class="detail-actions">
-        <a href="/holdings/{{ holder.id }}/edit" class="btn btn-secondary btn-sm">Edit</a>
+<section class="mb-12 flex flex-wrap items-end justify-between gap-6">
+    <div>
+        <a href="/holdings" class="text-xs uppercase tracking-wider text-textMuted hover:text-white transition-colors border-b border-transparent hover:border-white pb-0.5 mb-8 inline-block">&larr; Return to Holdings</a>
+        <h2 class="font-serif text-3xl text-white mb-2">{{ holder.name }}</h2>
+        <p class="text-xs text-textMuted uppercase tracking-wider">Base: {{ holder.currency }}{% if holder.phone %} &bull; {{ holder.phone }}{% endif %}</p>
     </div>
-</div>
+    <div class="flex flex-wrap gap-4">
+        <a href="/holdings/{{ holder.id }}/edit" class="border border-border text-white py-2 px-6 text-sm uppercase tracking-wider hover:border-textMuted transition-colors">Edit Holder Structure</a>
+    </div>
+</section>
 
-<div class="balance-card">
-    <div class="balance-label">Current Balance</div>
-    <div class="balance-amount">{{ current_balance | format_currency(holder.currency) }}</div>
-</div>
+<section class="grid grid-cols-1 md:grid-cols-3 gap-px bg-border mb-16">
+    <article class="bg-bg p-6">
+        <p class="text-xs uppercase tracking-wider text-textMuted mb-2">Liquidity Available</p>
+        <p class="text-xl font-normal text-white">{{ current_balance | format_currency(holder.currency) }}</p>
+    </article>
+    <article class="bg-bg p-6">
+        <p class="text-xs uppercase tracking-wider text-textMuted mb-2">Registered Actions</p>
+        <p class="text-xl font-normal text-white">{{ transactions|length }}</p>
+    </article>
+    <article class="bg-bg p-6 border-b-2 border-danger md:border-b-0">
+        <p class="text-sm uppercase tracking-wider text-danger mb-2">Denomination</p>
+        <p class="text-xl font-normal text-danger">{{ holder.currency }}</p>
+    </article>
+</section>
 
-<div class="grid grid-2">
-    <div class="card">
-        <h3>Add Deposit</h3>
-        <form method="post" action="/holdings/{{ holder.id }}/deposit">
-            <div class="form-group">
-                <label class="form-label">Amount</label>
-                <input type="number" name="amount" class="form-input" step="0.01" required>
+{% if holder.notes %}
+<section class="mb-16 border-l-2 border-textMuted pl-6 py-2">
+    <p class="text-xs text-textMuted uppercase tracking-wider mb-2">Strategic Memo</p>
+    <p class="text-sm text-white font-serif italic">{{ holder.notes }}</p>
+</section>
+{% endif %}
+
+<section class="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-16">
+    <article class="border border-border p-8">
+        <h3 class="font-serif text-2xl text-white mb-2">Capital Injection (Deposit)</h3>
+        <p class="text-xs text-textMuted uppercase tracking-wider mb-8">Register incoming funds to this entity</p>
+        
+        <form method="post" action="/holdings/{{ holder.id }}/deposit" class="space-y-6 mb-12 pb-12 border-b border-border">
+            <div>
+                <label for="deposit_amount" class="block text-xs uppercase tracking-wider text-textMuted mb-2">Amount</label>
+                <input type="number" id="deposit_amount" name="amount" step="0.01" min="0.01" required autocomplete="off"
+                    class="w-full bg-transparent border-b border-border py-2 text-white focus:outline-none focus:border-white transition-colors">
             </div>
-            <div class="form-group">
-                <label class="form-label">Note</label>
-                <input type="text" name="note" class="form-input">
+            <div>
+                <label for="deposit_note" class="block text-xs uppercase tracking-wider text-textMuted mb-2">Transaction Memo</label>
+                <input type="text" id="deposit_note" name="note" placeholder="Origin reference..." autocomplete="off"
+                    class="w-full bg-transparent border-b border-border py-2 text-white focus:outline-none focus:border-white transition-colors">
             </div>
-            <button type="submit" class="btn btn-primary btn-sm">Add Deposit</button>
+            <div class="pt-4">
+                <button type="submit" class="border border-white bg-white text-black py-2 px-6 uppercase tracking-wider text-sm hover:bg-transparent hover:text-white transition-colors">Execute Deposit</button>
+            </div>
         </form>
-    </div>
-    
-    <div class="card">
-        <h3>Transfer Funds</h3>
-        <form method="post" action="/holdings/transfer">
+
+        <h3 class="font-serif text-2xl text-white mb-2">Capital Extraction (Withdrawal)</h3>
+        <p class="text-xs text-textMuted uppercase tracking-wider mb-8">Register outgoing funds from this entity</p>
+        
+        <form method="post" action="/holdings/{{ holder.id }}/withdrawal" class="space-y-6">
+            <div>
+                <label for="withdraw_amount" class="block text-xs uppercase tracking-wider text-textMuted mb-2">Amount</label>
+                <input type="number" id="withdraw_amount" name="amount" step="0.01" min="0.01" required autocomplete="off"
+                    class="w-full bg-transparent border-b border-border py-2 text-white focus:outline-none focus:border-white transition-colors">
+            </div>
+            <div>
+                <label for="withdraw_note" class="block text-xs uppercase tracking-wider text-textMuted mb-2">Transaction Memo</label>
+                <input type="text" id="withdraw_note" name="note" placeholder="Destination reference..." autocomplete="off"
+                    class="w-full bg-transparent border-b border-border py-2 text-white focus:outline-none focus:border-white transition-colors">
+            </div>
+            <div class="pt-4">
+                <button type="submit" class="border border-border text-white py-2 px-6 uppercase tracking-wider text-sm hover:border-white transition-colors">Execute Withdrawal</button>
+            </div>
+        </form>
+    </article>
+
+    <article class="border border-border p-8">
+        <h3 class="font-serif text-2xl text-white mb-2">Internal Reallocation</h3>
+        <p class="text-xs text-textMuted uppercase tracking-wider mb-8">Transfer liquidity to another holder account</p>
+
+        <form method="post" action="/holdings/transfer" class="space-y-6">
             <input type="hidden" name="from_holder_id" value="{{ holder.id }}">
-            <div class="form-group">
-                <label class="form-label">To</label>
-                <select name="to_holder_id" class="form-select" required>
+
+            <div>
+                <label for="to_holder_id" class="block text-xs uppercase tracking-wider text-textMuted mb-2">Destination Account</label>
+                <select id="to_holder_id" name="to_holder_id" required 
+                    class="w-full bg-bg border border-border py-2 px-3 text-white focus:outline-none focus:border-white transition-colors appearance-none cursor-pointer">
                     {% for h in all_holders %}
-                    <option value="{{ h.id }}">{{ h.name }}</option>
+                    <option value="{{ h.id }}">{{ h.name }} ({{ h.currency }})</option>
                     {% endfor %}
                 </select>
+                {% if not all_holders %}
+                <p class="mt-2 text-sm uppercase tracking-wider text-danger">No valid counterparts in registry.</p>
+                {% endif %}
             </div>
-            <div class="form-group">
-                <label class="form-label">Amount</label>
-                <input type="number" name="amount" class="form-input" step="0.01" required>
+
+            <div>
+                <label for="transfer_amount" class="block text-xs uppercase tracking-wider text-textMuted mb-2">Amount</label>
+                <input type="number" id="transfer_amount" name="amount" step="0.01" min="0.01" required autocomplete="off"
+                    class="w-full bg-transparent border-b border-border py-2 text-white focus:outline-none focus:border-white transition-colors">
             </div>
-            <div class="form-group">
-                <label class="form-label">Note</label>
-                <input type="text" name="note" class="form-input">
+
+            <div>
+                <label for="transfer_note" class="block text-xs uppercase tracking-wider text-textMuted mb-2">Transfer Memo</label>
+                <input type="text" id="transfer_note" name="note" placeholder="Purpose or reference..." autocomplete="off"
+                    class="w-full bg-transparent border-b border-border py-2 text-white focus:outline-none focus:border-white transition-colors">
             </div>
-            <button type="submit" class="btn btn-primary btn-sm">Transfer</button>
+
+            <div class="pt-4 border-t border-border">
+                <button type="submit" class="border border-border text-white py-2 px-6 uppercase tracking-wider text-sm hover:border-white transition-colors disabled:opacity-30" {% if not all_holders %}disabled{% endif %}>Initiate Transfer</button>
+            </div>
         </form>
-    </div>
-</div>
+    </article>
+</section>
 
 {% if transactions %}
-<div class="card">
-    <h3>Transaction History</h3>
-    <div class="table-container">
-        <table>
+<section class="mb-16">
+    <div class="mb-6 flex justify-between items-end">
+        <h3 class="font-serif text-2xl text-white">Full Transaction Ledger</h3>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
             <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Type</th>
-                    <th>Amount</th>
-                    <th>Balance</th>
-                    <th>Note</th>
+                <tr class="border-b-2 border-border">
+                    <th class="py-3 px-4 text-xs uppercase tracking-wider text-textMuted font-normal">Date Registered</th>
+                    <th class="py-3 px-4 text-xs uppercase tracking-wider text-textMuted font-normal">Operation</th>
+                    <th class="py-3 px-4 text-xs uppercase tracking-wider text-textMuted font-normal">Flow</th>
+                    <th class="py-3 px-4 text-xs uppercase tracking-wider text-textMuted font-normal">Resulting Base</th>
+                    <th class="py-3 px-4 text-xs uppercase tracking-wider text-textMuted font-normal">Memo</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody class="text-sm">
                 {% for t in transactions %}
-                <tr>
-                    <td>{{ t.transaction.transaction_date.strftime('%d %b %Y') }}</td>
-                    <td>{{ t.transaction.transaction_type.replace('_', ' ').title() }}</td>
-                    <td>{{ t.transaction.amount | format_currency(holder.currency) }}</td>
-                    <td>{{ t.balance_after | format_currency(holder.currency) }}</td>
-                    <td>{{ t.transaction.note or '-' }}</td>
+                <tr class="border-b border-border hover:bg-border/30 transition-colors">
+                    <td class="py-4 px-4 text-white">{{ t.transaction.transaction_date.strftime('%d %b %Y') }}</td>
+                    <td class="py-4 px-4 text-textMuted uppercase tracking-wider text-sm">{{ t.transaction.transaction_type.replace('_', ' ') }}</td>
+                    <td class="py-4 px-4 {{ 'text-success' if t.transaction.transaction_type == 'deposit' else ('text-danger' if t.transaction.transaction_type == 'withdrawal' else 'text-white') }}">{{ t.transaction.amount | format_currency(holder.currency) }}</td>
+                    <td class="py-4 px-4 text-white font-medium">{{ t.balance_after | format_currency(holder.currency) }}</td>
+                    <td class="py-4 px-4 text-textMuted">{{ t.transaction.note or '--' }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
-</div>
+</section>
+{% else %}
+<section class="border border-border p-16 text-center mb-16">
+    <h3 class="font-serif text-2xl text-white mb-2">No Ledger Entries</h3>
+    <p class="text-xs uppercase tracking-wider text-textMuted">Entity is entirely dormant. Initiate capital flow to begin.</p>
+</section>
 {% endif %}
 {% endblock %}

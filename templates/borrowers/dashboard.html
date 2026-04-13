@@ -1,102 +1,97 @@
 {% extends "base.html" %}
 
-{% block title %}Borrowers - Loan Tracker{% endblock %}
+{% block title %}Borrowers - Loan Ledger{% endblock %}
 
 {% block content %}
-<div class="mb-8 animate-fade-in">
-    <div class="flex justify-between items-center mb-6">
-        <div>
-            <h1 class="text-4xl font-bold text-gray-900">Borrowers</h1>
-            <p class="text-gray-600 mt-2">Track loan payments and overdue accounts</p>
-        </div>
-        <a href="/borrowers/add" class="bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl inline-flex items-center space-x-2">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-            </svg>
-            <span>Add Borrower</span>
-        </a>
+<section class="mb-12 flex flex-wrap items-end justify-between gap-6">
+    <div>
+        <h2 class="font-serif text-3xl text-white mb-2">Borrowers Ledger</h2>
+        <p class="text-xs text-textMuted uppercase tracking-wider">Active Accounts & Metrics</p>
     </div>
-</div>
+    <a href="/borrowers/add" class="border border-border hover:border-white px-6 py-2 text-sm uppercase tracking-wider text-white transition-colors">+ Add Borrower</a>
+</section>
 
-{% if borrower_data and borrower_data|length > 0 %}
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
+<section class="grid grid-cols-1 md:grid-cols-4 gap-px bg-border mb-12">
+    <article class="bg-bg p-6">
+        <p class="text-xs uppercase tracking-wider text-textMuted mb-4">Active Borrowers</p>
+        <p class="text-3xl font-normal text-white">{{ summary.active_count }}</p>
+        <p class="mt-2 text-sm text-textMuted">{{ summary.borrower_count }} total entries</p>
+    </article>
+    <article class="bg-bg p-6">
+        <p class="text-xs uppercase tracking-wider text-textMuted mb-4">Expected Monthly</p>
+        <p class="text-3xl font-normal text-white">{{ summary.monthly_interest_expected | format_currency }}</p>
+    </article>
+    <article class="bg-bg p-6 border-t-2 border-t-danger md:border-t-0 md:border-b-2 md:border-b-danger">
+        <p class="text-sm uppercase tracking-wider text-danger mb-4">Total Amount Due</p>
+        <p class="text-3xl font-normal text-white">{{ summary.total_due | format_currency }}</p>
+    </article>
+    <article class="bg-bg p-6 border-t-2 border-t-success md:border-t-0 md:border-b-2 md:border-b-success">
+        <p class="text-sm uppercase tracking-wider text-success mb-4">Total Recovered</p>
+        <p class="text-3xl font-normal text-white">{{ summary.total_recovered | format_currency }}</p>
+    </article>
+</section>
+
+<section class="grid grid-cols-1 md:grid-cols-3 gap-px bg-border mb-16">
+    <article class="bg-bg p-6">
+        <p class="text-xs uppercase tracking-wider text-textMuted mb-2">Interest Recovered</p>
+        <p class="text-xl font-normal text-success">{{ summary.interest_recovered | format_currency }}</p>
+    </article>
+    <article class="bg-bg p-6">
+        <p class="text-xs uppercase tracking-wider text-textMuted mb-2">Interest Due</p>
+        <p class="text-xl font-normal text-danger">{{ summary.interest_due | format_currency }}</p>
+    </article>
+    <article class="bg-bg p-6">
+        <p class="text-xs uppercase tracking-wider text-textMuted mb-2">Capital Lost</p>
+        <p class="text-xl font-normal text-danger">{{ summary.money_lost | format_currency }}</p>
+        <p class="mt-2 text-sm text-textMuted">{{ summary.defaulted_count }} defaults</p>
+    </article>
+</section>
+
+{% if borrower_data %}
+<section class="space-y-6">
     {% for data in borrower_data %}
-    <div class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 border-2 {{ 'border-red-200 bg-red-50/30' if data.overdue_months > 0 else 'border-green-200 bg-green-50/30' }} overflow-hidden group">
-        <div class="p-6">
-            <div class="flex justify-between items-start mb-4">
-                <div>
-                    <h3 class="text-2xl font-bold text-gray-900 group-hover:text-accent-green transition-colors">
-                        {{ data.borrower.name }}
-                    </h3>
-                    {% if data.overdue_months > 0 %}
-                    <span class="inline-flex items-center mt-2 px-3 py-1 rounded-full text-sm font-semibold bg-accent-red text-white">
-                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                        </svg>
-                        {{ data.overdue_months }} months overdue
-                    </span>
-                    {% endif %}
-                </div>
-                <span class="px-4 py-2 rounded-full text-sm font-semibold {{ 'bg-green-100 text-green-800 border-2 border-green-300' if data.borrower.principal_recovered else 'bg-yellow-100 text-yellow-800 border-2 border-yellow-300' }}">
-                    {{ '✓ Recovered' if data.borrower.principal_recovered else '⏳ Active' }}
-                </span>
+    <article class="border border-border p-6 hover:border-textMuted transition-colors flex flex-col md:flex-row gap-8">
+        <div class="md:w-1/3 flex flex-col justify-between">
+            <div>
+                <h3 class="font-serif text-2xl text-white mb-1">{{ data.borrower.name }}</h3>
+                <p class="text-sm text-textMuted">Since {{ data.borrower.start_date.strftime('%d %b %Y') }}</p>
             </div>
             
-            <div class="space-y-3 mb-6">
-                <div class="flex justify-between items-center py-2 border-b border-gray-200">
-                    <span class="text-gray-600 font-medium">Principal</span>
-                    <span class="text-xl font-bold text-gray-900">{{ data.borrower.principal | format_currency }}</span>
-                </div>
-                <div class="flex justify-between items-center py-2 border-b border-gray-200">
-                    <span class="text-gray-600 font-medium">Interest Rate</span>
-                    <span class="text-lg font-semibold text-blue-600">{{ data.borrower.interest_rate }}% /month</span>
-                </div>
-                <div class="flex justify-between items-center py-2 border-b border-gray-200">
-                    <span class="text-gray-600 font-medium">Start Date</span>
-                    <span class="text-gray-900 font-medium">{{ data.borrower.start_date.strftime('%d %b %Y') }}</span>
-                </div>
-                <div class="flex justify-between items-center py-2">
-                    <span class="text-gray-600 font-medium">Payments Made</span>
-                    <span class="bg-gray-100 px-3 py-1 rounded-full text-gray-900 font-semibold">{{ data.payment_count }}</span>
-                </div>
-            </div>
-            
-            <div class="flex space-x-2">
-                <a href="/borrowers/{{ data.borrower.id }}" class="flex-1 bg-black text-white py-3 rounded-lg font-semibold hover:bg-gray-800 transition-all text-center transform hover:scale-105">
-                    View Details
-                </a>
-                <a href="/borrowers/{{ data.borrower.id }}/edit" class="px-4 py-3 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-all transform hover:scale-105">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                    </svg>
-                </a>
-                <form method="post" action="/borrowers/{{ data.borrower.id }}/delete" onsubmit="return confirm('Delete this borrower and all related data?')" class="inline">
-                    <button type="submit" class="px-4 py-3 bg-accent-red text-white rounded-lg font-semibold hover:bg-red-600 transition-all transform hover:scale-105">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                        </svg>
-                    </button>
-                </form>
+            <div class="mt-8">
+                {% if data.status == 'defaulted' %}
+                    <span class="inline-block border border-danger px-3 py-1 text-sm uppercase tracking-wider text-danger">Defaulted</span>
+                {% elif data.status == 'recovered' %}
+                    <span class="inline-block border border-success px-3 py-1 text-sm uppercase tracking-wider text-success">Recovered</span>
+                {% else %}
+                    <span class="inline-block border border-textMuted px-3 py-1 text-sm uppercase tracking-wider text-white">Active</span>
+                {% endif %}
             </div>
         </div>
-    </div>
+
+        <div class="md:w-2/3 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mt-4 md:mt-0">
+            <div class="flex flex-col justify-center">
+                <span class="text-xs uppercase tracking-wider text-textMuted mb-1">Principal</span>
+                <span class="text-white">{{ data.borrower.principal | format_currency }}</span>
+            </div>
+            <div class="flex flex-col justify-center">
+                <span class="text-xs uppercase tracking-wider text-textMuted mb-1">Total Due</span>
+                <span class="text-white">{{ data.total_due | format_currency }}</span>
+            </div>
+            <div class="flex flex-col justify-center">
+                <span class="text-xs uppercase tracking-wider text-textMuted mb-1">Int. Due</span>
+                <span class="text-danger">{{ data.interest_due | format_currency }}</span>
+            </div>
+            <div class="flex flex-col items-start justify-center pt-2 md:pt-0">
+                <a href="/borrowers/{{ data.borrower.id }}" class="text-sm uppercase tracking-wider text-white hover:text-textMuted transition-colors border-b border-white pb-0.5">Open Ledger &rarr;</a>
+            </div>
+        </div>
+    </article>
     {% endfor %}
-</div>
+</section>
 {% else %}
-<div class="text-center py-16 animate-fade-in">
-    <div class="inline-flex items-center justify-center w-24 h-24 bg-gray-100 rounded-full mb-6">
-        <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-        </svg>
-    </div>
-    <h3 class="text-2xl font-bold text-gray-900 mb-2">No borrowers yet</h3>
-    <p class="text-gray-600 mb-6">Start tracking loans by adding your first borrower</p>
-    <a href="/borrowers/add" class="inline-flex items-center space-x-2 bg-black text-white px-8 py-4 rounded-lg font-semibold hover:bg-gray-800 transform hover:scale-105 transition-all shadow-lg">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-        </svg>
-        <span>Add First Borrower</span>
-    </a>
-</div>
+<section class="border-y border-border py-24 text-center">
+    <h3 class="font-serif text-2xl text-white mb-2">No Active Records</h3>
+    <p class="text-sm text-textMuted">The ledger is empty. Add a borrower to commence tracking.</p>
+</section>
 {% endif %}
 {% endblock %}

@@ -14,6 +14,9 @@ class Borrower(SQLModel, table=True):
     interest_rate: float = Field(gt=0)  # Monthly interest rate as percentage
     start_date: date
     principal_recovered: bool = Field(default=False)
+    is_defaulted: bool = Field(default=False)
+    defaulted_on: Optional[date] = None
+    default_note: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.now)
     
     # Relationships

@@ -2,6 +2,7 @@
 Database configuration and session management
 """
 from sqlmodel import SQLModel, create_engine, Session
+from sqlalchemy import inspect, text
 from app.config import DATABASE_URL
 
 # Import all models to register them with SQLModel
@@ -17,9 +18,32 @@ engine = create_engine(
 )
 
 
+def _ensure_legacy_schema_compatibility():
+    """Add missing columns for existing databases created before newer releases."""
+    with engine.begin() as connection:
+        inspector = inspect(connection)
+        table_names = set(inspector.get_table_names())
+        if "borrower" not in table_names:
+            return
+
+        borrower_columns = {col["name"] for col in inspector.get_columns("borrower")}
+        statements = []
+
+        if "is_defaulted" not in borrower_columns:
+            statements.append("ALTER TABLE borrower ADD COLUMN is_defaulted BOOLEAN DEFAULT 0")
+        if "defaulted_on" not in borrower_columns:
+            statements.append("ALTER TABLE borrower ADD COLUMN defaulted_on DATE")
+        if "default_note" not in borrower_columns:
+            statements.append("ALTER TABLE borrower ADD COLUMN default_note VARCHAR")
+
+        for statement in statements:
+            connection.execute(text(statement))
+
+
 def create_db_and_tables():
     """Create database tables"""
     SQLModel.metadata.create_all(engine)
+    _ensure_legacy_schema_compatibility()
 
 
 def get_session():
