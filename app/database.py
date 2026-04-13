@@ -30,7 +30,8 @@ def _ensure_legacy_schema_compatibility():
         statements = []
 
         if "is_defaulted" not in borrower_columns:
-            statements.append("ALTER TABLE borrower ADD COLUMN is_defaulted BOOLEAN DEFAULT 0")
+            # SQLite uses 0/1 for booleans normally via ALTER TABLE, but Postgres strictly requires FALSE
+            statements.append("ALTER TABLE borrower ADD COLUMN is_defaulted BOOLEAN DEFAULT FALSE")
         if "defaulted_on" not in borrower_columns:
             statements.append("ALTER TABLE borrower ADD COLUMN defaulted_on DATE")
         if "default_note" not in borrower_columns:
