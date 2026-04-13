@@ -12,7 +12,11 @@ def _normalize_database_url(raw_url: str) -> str:
 	"""Normalize DB URLs from platforms like Render/Neon for SQLAlchemy."""
 	# Some platforms still provide postgres://; SQLAlchemy expects postgresql://.
 	if raw_url.startswith("postgres://"):
-		return raw_url.replace("postgres://", "postgresql://", 1)
+		raw_url = raw_url.replace("postgres://", "postgresql://", 1)
+	
+	if raw_url.startswith("postgresql://"):
+		# Since we are using psycopg 3 (psycopg[binary]), we must specify postgresql+psycopg://
+		return raw_url.replace("postgresql://", "postgresql+psycopg://", 1)
 	return raw_url
 
 # Database
